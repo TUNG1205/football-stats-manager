@@ -1,0 +1,3 @@
+- a piece of data can be derived instead of calculating form the database. 
+- Question 6 and 7 wants us to use Recursion 
+- python -m turtledemo
