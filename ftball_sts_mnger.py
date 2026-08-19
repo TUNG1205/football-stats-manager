@@ -48,10 +48,10 @@ def update_stats(row,GF,GA):
 #apply this match's result to both teams (goals are swapped so each team's GF/GA is correct from their own side)
 update_stats(home_row, hme_tm_goal, away_tm_goal)
 update_stats(away_row, away_tm_goal, hme_tm_goal)
-#print the group table: a header row followed by every team's stats in that group
-print('Group:', grp_name)
-print('Team', 'MP', 'W', 'D', 'L', 'GF', 'GA', 'GD', 'Pts')
+#print the group table with fixed-width columns so the stats line up neatly
+print(f"\nGroup: {grp_name}")
+print(f"{'Team':<15}{'MP':>4}{'W':>4}{'D':>4}{'L':>4}{'GF':>4}{'GA':>4}{'GD':>5}{'Pts':>5}")
 for row in stats:
     if row['Group'] == grp_name:
-        print(row['Team'], row['MP'], row['W'], row['D'], row['L'],
-              row['GF'], row['GA'], row['GD'], row['Pts'])
+        print(f"{row['Team']:<15}{row['MP']:>4}{row['W']:>4}{row['D']:>4}"
+              f"{row['L']:>4}{row['GF']:>4}{row['GA']:>4}{row['GD']:>5}{row['Pts']:>5}")
