@@ -124,30 +124,116 @@ def part2():
 
     #displays every scheduled match (ID, home team, away team) for one chosen group
     def view_group_matches():
-        chosen_group = input('\nPlease enter the group name to view matches for: ')
+        group = input('\nPlease enter the group name to view matches for: ')
         #Check if the group exists
-        if chosen_group in group_records:
+        if group in group_records:
             group_matches = []
             #Filter the matches list to only include matches for the chosen group
             for match in matches:
-                if match['Group'] == chosen_group:
+                if match['Group'] == group:
                     group_matches.append(match)
             #Display the matches for the chosen group, or indicate that no matches were found
             if len(group_matches) > 0:
-                print(f'\nMatches for {chosen_group}:')
+                print(f'\nMatches for {group}:')
                 for match in group_matches:
                     print(f"Match {match['MatchID']}: {match['Home']} vs {match['Away']}")
             else:
-                print(f'\nNo matches found for {chosen_group}.')
+                print(f'\nNo matches found for {group}.')
         else:
             print('That group does not exist.')
+    #updates a single team's row with the result of one match (MP, W/D/L, GF, GA, GD, Pts) using similar function as in part 1.
+    def calculate_points_and_stats(team_record, GF, GA):
+        team_record['MP'] += 1
+        team_record['GF'] += GF
+        team_record['GA'] += GA
+        team_record['GD'] = team_record['GF'] - team_record['GA']
+        if GF > GA:
+            team_record['W'] += 1
+            team_record['Pts'] += 3
+        elif GF < GA:
+            team_record['L'] += 1
+        else:
+            team_record['D'] += 1
+        team_record['Pts'] = team_record['W'] * 3 + team_record['D']
+    def record_match_scores():
+        #Keep offering groups until the user is done recording match scores entirely
+        while True:
+            #Keep asking for a group name until it exists and has at least one match to record
+            while True:
+                group = input('\nPlease enter the group name to record match scores for: ')
+                if group not in group_records:
+                    print('That group does not exist, please enter a valid group name.')
+                    continue
+                #Filter the matches list down to just this group's matches
+                group_matches = []
+                for match in matches:
+                    if match['Group'] == group:
+                        group_matches.append(match)
+                if len(group_matches) == 0:
+                    print(f'No matches have been created for {group} yet. Please choose a different group.')
+                    continue
+                break
+            #Show the group's matches so the user knows which IDs are valid to pick from
+            print(f'\nMatches for {group}:')
+            for match in group_matches:
+                print(f"Match {match['MatchID']}: {match['Home']} vs {match['Away']}")
+
+            #Keep recording match scores for this group until the user is done
+            while True:
+                match_id = int(input('\nPlease enter the match ID to record scores for: '))
+                #Find the chosen match, but only search within this group's matches
+                for match in group_matches:
+                    #if the match ID matches, store the match record and break out of the loop
+                    if match['MatchID'] == match_id:
+                        selected_match = match
+                        break
+                else:
+                    print('That match ID does not belong to this group. Please choose a valid match ID.')
+                    continue
+                #Prompt the user to enter the goals scored by each team in the selected match
+                home_goals = int(input(f"Enter goals scored by {selected_match['Home']}: "))
+                away_goals = int(input(f"Enter goals scored by {selected_match['Away']}: "))
+                #Update the stats for both teams in this group's table
+                for team_record in group_records[group]:
+                    #Check if this team is the home or away team in the selected match and update its stats accordingly
+                    if team_record['Team'] == selected_match['Home']:
+                        calculate_points_and_stats(team_record, home_goals, away_goals)
+                    elif team_record['Team'] == selected_match['Away']:
+                        calculate_points_and_stats(team_record, away_goals, home_goals)
+                #print the match summary in the same format as Part 1
+                print('\nGroup Name:', selected_match['Group'])
+                print('Match Number:', selected_match['MatchID'])
+                print('Home Team:', selected_match['Home'])
+                print('Away Team:', selected_match['Away'])
+                print('Home Team Goals:', home_goals)
+                print('Away Team Goals:', away_goals)
+                if home_goals > away_goals:
+                    print('Winner of Match', selected_match['MatchID'], 'is:', selected_match['Home'])
+                elif away_goals > home_goals:
+                    print('Winner of Match', selected_match['MatchID'], 'is:', selected_match['Away'])
+                else:
+                    print('Match', selected_match['MatchID'], 'ended in a draw.')
+                #Ask the user if they want to record another match score for this group, and validate the input 
+                again = input(f'\nRecord another match score for {group}? (yes/no): ')
+                if again.lower() == 'no':
+                    break
+                elif again.lower() != 'yes' and again.lower() != 'no':
+                    print('Invalid input. Please enter "yes" or "no".')
+                    continue
+            #Ask if the user wants to record match scores for a different group, or return to the menu
+            another_group = input('\nRecord match scores for another group? (yes/no): ')
+            if another_group.lower() == 'no':
+                break
+            elif another_group.lower() != 'yes' and another_group.lower() != 'no':
+                print('Invalid input. Please enter "yes" or "no".')
+                continue
 
     #While True: keep showing the menu and running the chosen action until the user picks 8 (Exit)
     while True:
         print('\nWelcome to the Football Tournament Group Stage Manager!')
         print('\nMenu')
         print('1. Create group tournaments')
-        print('2. View a group tournament')
+        print('2. View group tournament')
         print('3. Create group matches')
         print('4. View group matches')
         print('5. Record match scores')
@@ -165,7 +251,7 @@ def part2():
         elif choice == '4':
             view_group_matches()
         elif choice == '5':
-            print('Not implemented yet.')
+            record_match_scores()
         elif choice == '6':
             print('Not implemented yet.')
         elif choice == '7':
