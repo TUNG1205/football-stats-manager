@@ -54,6 +54,8 @@ def part1():
 def part2():
     #holds every group's teams so it can be read by other menu options later
     group_records = {}
+    #holds every scheduled match across all groups
+    matches = []
     def create_group_tournaments():
         total_teams = int(input('\nPlease enter the total number of teams participating in the tournament: '))
         #Validation for number of teams: divisible by 4
@@ -75,7 +77,6 @@ def part2():
                 teams.append(team_record)
             #add the group and its teams to the group records dictionary
             group_records[group_name] = teams
-
     #displays every group with its 4 teams, plus totals for groups and teams
     def view_group_tournament():
         #Check if any groups have been created yet
@@ -94,6 +95,52 @@ def part2():
             total_teams += len(teams)
         print(f'\nTotal number of groups: {len(group_records)}')
         print(f'Total number of teams: {total_teams}')
+        
+    #schedules round-robin matches (every team plays every other team once) for a chosen group
+    def create_group_matches():
+        while True:
+            group_name = input('\nPlease enter the name of the group to create matches for: ')
+            #Ensure that the group actually exists before scheduling matches for it
+            if group_records.get(group_name) is None:
+                print('That group does not exist. Please create it first.')
+            else:
+                print(f'\nGenerating matches for {group_name}:')
+                for i in range(4):
+                    #pair team i with every team that comes after it in the list so that each pair only appears once
+                    for j in range(i + 1, 4):
+                        match_id = len(matches) + 1
+                        home_team = group_records[group_name][i]['Team']
+                        away_team = group_records[group_name][j]['Team']
+                        match_record = {'MatchID': match_id, 'Group': group_name, 'Home': home_team, 'Away': away_team}
+                        matches.append(match_record)
+                        print(f"Match {match_id}: {home_team} vs {away_team}")
+            #Ask the user if they want to create matches for another group
+            again = input('\nCreate matches for another group? (yes/no): ')
+            if again.lower() == 'no':
+                break
+            if again.lower() != 'yes' and again.lower() != 'no':
+                print('Invalid input. Please enter "yes" or "no".')
+                continue
+
+    #displays every scheduled match (ID, home team, away team) for one chosen group
+    def view_group_matches():
+        chosen_group = input('\nPlease enter the group name to view matches for: ')
+        #Check if the group exists
+        if chosen_group in group_records:
+            group_matches = []
+            #Filter the matches list to only include matches for the chosen group
+            for match in matches:
+                if match['Group'] == chosen_group:
+                    group_matches.append(match)
+            #Display the matches for the chosen group, or indicate that no matches were found
+            if len(group_matches) > 0:
+                print(f'\nMatches for {chosen_group}:')
+                for match in group_matches:
+                    print(f"Match {match['MatchID']}: {match['Home']} vs {match['Away']}")
+            else:
+                print(f'\nNo matches found for {chosen_group}.')
+        else:
+            print('That group does not exist.')
 
     #While True: keep showing the menu and running the chosen action until the user picks 8 (Exit)
     while True:
@@ -114,9 +161,9 @@ def part2():
         elif choice == '2':
             view_group_tournament()
         elif choice == '3':
-            print('Not implemented yet.')
+            create_group_matches()
         elif choice == '4':
-            print('Not implemented yet.')
+            view_group_matches()
         elif choice == '5':
             print('Not implemented yet.')
         elif choice == '6':
@@ -127,7 +174,10 @@ def part2():
             print('Goodbye!')
             break
         else:
-            print('Invalid choice. Please enter a number from 1 to 8.')         
+            print('Invalid choice. Please enter a number from 1 to 8.')
+        #prompt the user to press Enter to return to the menu, and print a separator line for clarity
+        print('\n' + '=' * 40)
+        input('Press Enter to return to the menu...')
 #menu to choose which part to run
 choice = input('Which part do you want to run? (1 or 2): ')
 if choice == '1':
