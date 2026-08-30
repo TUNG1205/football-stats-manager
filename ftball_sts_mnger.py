@@ -1,23 +1,30 @@
+#TUNG DUC NGUYEN - s4275232
+#Was able to finish everything until Part 8
 def part1():
+    #Check for a valid whole number, then returns it as an int
+    def check_whole_number(prompt):
+        while True:
+            value = input(prompt)
+            if value.isdigit():
+                return int(value)
+            else:
+                print('Please enter a whole, non-negative number.')
     grp_name = input('Please enter a group name: ')
     match_nber = input('Please enter match number: ')
     hme_tm_name = input('Please enter the name of the home team: ')
     away_tm_name = input('Please enter the name of the away team: ')
-    hme_tm_goal = int(input('Please enter the goals by the home team: '))
-    away_tm_goal = int(input('Please enter the goals by the away team: '))
-    print('Group Name:', grp_name)
-    print('Match Number:', match_nber)
-    print('Home Team:', hme_tm_name)
-    print('Away Team:', away_tm_name)
-    print('Home Team Goals:', hme_tm_goal)
-    print('Away Team Goals:', away_tm_goal)
+    hme_tm_goal = check_whole_number('Please enter the goals by the home team: ')
+    away_tm_goal = check_whole_number('Please enter the goals by the away team: ')
+    #print the match summary: a header, a separator line, the score, then the result
+    print(f'\n{grp_name} Match {match_nber} summary')
+    print(f'{hme_tm_name} {hme_tm_goal} vs {away_tm_name} {away_tm_goal}')
     #instead of user input, the program will automatically generate the winner of the match based on the goals scored by each team and compare the goals scored by the home team and the away team and determine the winner accordingly.
     if hme_tm_goal > away_tm_goal:
-        print('Winner of Match', match_nber, 'is:', hme_tm_name)
+        print(f'Winner of match {match_nber} is {hme_tm_name}')
     elif away_tm_goal > hme_tm_goal:
-        print('Winner of Match', match_nber, 'is:', away_tm_name)
+        print(f'Winner of match {match_nber} is {away_tm_name}')
     else:
-        print('Match', match_nber, 'ended in a draw.')
+        print(f'Match {match_nber} ended in a draw.')
     #dictionaries holding each team's stats
     home_row = {'Group': grp_name, 'Team': hme_tm_name, 'MP': 0, 'W': 0, 'D': 0, 'L': 0, 'GF': 0, 'GA': 0, 'GD': 0, 'Pts': 0}
     away_row = {'Group': grp_name, 'Team': away_tm_name, 'MP': 0, 'W': 0, 'D': 0, 'L': 0, 'GF': 0, 'GA': 0, 'GD': 0, 'Pts': 0}
@@ -81,7 +88,14 @@ def part2():
         print('Total number of groups:', total_groups)
         for i in range(total_groups):
             print(f'\n Group {i+1} of {total_groups}')
-            group_name = input(f'\nPlease enter the name of group {i+1}: ')
+            #check whether the group name has already been used
+            valid_group_name = False
+            while valid_group_name == False:
+                group_name = input(f'\nPlease enter the name of group {i+1}: ')
+                if group_name in group_records:
+                    print('That group name is already in use. Please choose a different name.')
+                else:
+                    valid_group_name = True
             print(f'\nYou will now enter the names of the 4 teams in group {group_name}.')
             #empty list to hold the teams in this group
             teams = []
@@ -187,7 +201,6 @@ def part2():
         if group_records == {}:
             print('\nNo groups have been created yet. Please create a group first.')
             return
-        #users can keep
         select_groups = True
         while select_groups:
             #looks for a group name until it exists and has at least one match to record
@@ -213,7 +226,7 @@ def part2():
             #Keep recording match scores for this group until the user decides to exist
             record = True
             while record:
-                match_id = int(input('\nPlease enter the match ID to record scores for: '))
+                match_id = check_whole_number('\nPlease enter the match ID to record scores for: ')
                 #Find the chosen match, but only search within this group's matches
                 match_found = False
                 for match in group_matches:
@@ -260,7 +273,6 @@ def part2():
                 print('Invalid input. Please enter "yes" or "no".')
     #displays a group's table, sorted in decending order to rank the teams
     def view_group_tables():
-        #Stop here if no groups exist yet, so the group-name prompt below can't loop forever
         if group_records == {}:
             print('\nNo groups have been created yet. Please create a group first.')
             return
@@ -272,7 +284,6 @@ def part2():
                 valid_group = True
             else:
                 print('That group does not exist, please enter a valid group name.')
-        
         #Python's built-in sorted(): Investigated through Val
         #group_records[group]:list of team dicts for the chosen group(the data being sorted)
         #key=sort_items: Keys used to compare teams(Pts, GD, GF) 
@@ -352,4 +363,47 @@ def part2():
 if __name__ == "__main__":
     part1()
     part2()
-#Reference: github: 
+#Design Decision and Rationales:
+#I used dictionaries instead of lists of lists to store teams and matches,
+#group_records maps each group name to a list of its 4 team dicts, while matches is one flat
+#list holding every match from every group, distinguished by a 'Group' key on each match..
+#Match IDs are a single auto-incrementing counter across all groups rather than restarting at 1
+#per group as this satisfies the "unique per group" requirement automatically, since global
+#uniqueness is a stronger guarantee than per-group uniqueness, without needing a separate
+#counter for every group.
+#I pulled repeated logic into shared functions once I noticed I was writing the same thing twice:
+#calculate_points_and_stats started as a copy of Part 1's stats function, and check_whole_number/
+#contains_number were written once I needed the same "keep asking until valid" pattern for team
+#counts, team names, and goals in multiple places.
+
+#Special Challenges (menu options 6 and 7):
+#For view group tables, the brief asked me to investigate sorting methods, so I looked into
+#implementing a manual sort by hand before deciding to use Python's built-in
+#sorted(). I used RMIT Val to check my understanding of the tools available - it explained the
+#difference between sorted() and .sort(), and how the key parameter can be used to sort by a
+#chosen field and Val's example used a lambda for the sort key, but I wrote a named function
+#(sort_items) instead, since I found it easier to read and comment properly. Additionally, I chose sorted()
+#over the manual approach because it is a tested, built-in implementation that is faster on
+#larger inputs, and its key parameter handles the multi-level tiebreaker (points, then goal difference, then goals for) in one line rather than a
+#hand-written comparison inside nested loops, which I find could be better for performance.
+#For determine winners, I asked Val how to check that every team in a group had completed its
+#matches before ranking them, and how to combine the top 2 from each group into one list and it suggested
+#used all() for the completion check and returned qualifiers as copied dictionaries
+#with an added group key. However, I did not use that directly and wrote the completion check as an
+#explicit loop instead of all(), and I appended just team names into a list rather than copying whole dictionaries, since that is all I needed for
+#the final display. In the end, the core idea (check completion first, sort with the same key as the table
+#view, take the top two, combine across groups) came from that conversation, but the actual
+#implementation is my own and fits my existing group_records/matches structures rather than the
+#standalone example groups Val used.
+
+#Challenges and Limitations:
+#I ran into a data-integrity issue where generating matches for the same group twice created
+#duplicate pairings, and recording scores unevenly against those duplicates left some teams with
+#more matches played than others, which then broke the "has this group finished its round-robin"
+#check in option 7. I fixed it by adding a check that stops matches being generated for a group that already has them.
+#Known limitations: home/away assignment for generated matches is based purely on the order teams
+#were registered in, not on any  rule, so the first team entered in a group ends up
+#"home" in all three of its matches rather than that being balanced or alternated.
+#The program also keeps everything in memory only, so closing it loses all progress; there is no save/load feature.
+
+#Reference: github: https://github.com/TUNG1205/football-stats-manager
